@@ -6,7 +6,7 @@ public class ParallaxManager : MonoBehaviour
     public class ParallaxLayer
     {
         public Transform layer;
-        [Range(0, 1)] public float parallaxFactor;
+       [Range(0, 1)] public float parallaxFactor;
     }
 
     public ParallaxLayer[] layers;
@@ -17,7 +17,7 @@ public class ParallaxManager : MonoBehaviour
 
     void Start()
     {
-        lastCameraPosition = camTransform.position;
+        lastCameraPosition = camTransform.position; 
     }
 
     void LateUpdate()
@@ -33,6 +33,6 @@ public class ParallaxManager : MonoBehaviour
             layer.layer.position += new Vector3(moveX, moveY, 0);
 
         }
-        lastCameraPosition = camTransform.position;
+    lastCameraPosition = camTransform.position;
     }
 }
