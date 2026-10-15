@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
     public PlayerJumpState jumpState;
     public PlayerMoveState moveState;
     public PlayerCrouchState crouchState;
+    public PlayerDamagedState damagedState;
     public PlayerSlideState slideState;
     public PlayerAttackState attackState;
 
@@ -19,6 +20,7 @@ public class Player : MonoBehaviour
 
     [Header("Components")]
     public Combat combat;
+    public Damage damage;
     public Rigidbody2D rb;
     public PlayerInput playerInput;
     public Animator anim;
@@ -75,6 +77,7 @@ public class Player : MonoBehaviour
         jumpState = new PlayerJumpState(this);
         moveState = new PlayerMoveState(this);
         crouchState = new PlayerCrouchState(this);
+        damagedState = new PlayerDamagedState(this);
         slideState = new PlayerSlideState(this);
         attackState = new PlayerAttackState(this);
     }
