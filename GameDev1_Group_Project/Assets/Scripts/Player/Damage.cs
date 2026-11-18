@@ -1,43 +1,57 @@
+
 using UnityEngine;
 
 public class Damage : MonoBehaviour
 {
     [SerializeField] private Player player;
-    public Health health;
+    private Health health;
 
     [Header("Knockback Settings")]
     public float knockbackForce = 20;
     public float knockbackDuration = .2f;
 
+    private void Awake()
+    {
+        health = GetComponent<Health>();
+    }
 
     private void OnEnable()
     {
+        if (health == null)
+        {
+            Debug.LogError("Health component is missing!", this);
+            return;
+        }
+
         health.OnDamaged += HandleDamage;
         health.OnDeath += HandleDeath;
-
     }
-
 
     private void OnDisable()
     {
-        health.OnDamaged -= HandleDamage;
-        health.OnDeath += HandleDeath;
+        if (health == null)
+            return;
 
+        health.OnDamaged -= HandleDamage;
+        health.OnDeath -= HandleDeath;
     }
 
-
-    void HandleDamage(Vector2 sourcePosition)
+    private void HandleDamage(Vector2 sourcePosition)
     {
-        int knockbackDir = 0;
-        knockbackDir = transform.position.x > sourcePosition.x ? 1 : -1;
+        if (player == null || player.damagedState == null)
+        {
+            Debug.LogError("Player or Damaged State is missing!", this);
+            return;
+        }
+
+        int knockbackDir = transform.position.x > sourcePosition.x ? 1 : -1;
 
         player.damagedState.SetParameters(knockbackDir);
         player.ChangeState(player.damagedState);
     }
 
-    void HandleDeath()
+    private void HandleDeath()
     {
-       
+
     }
 }
-

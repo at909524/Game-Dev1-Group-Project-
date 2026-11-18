@@ -1,9 +1,9 @@
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
-
     public PlayerState currentState;
 
     public PlayerIdleState idleState;
@@ -13,10 +13,6 @@ public class Player : MonoBehaviour
     public PlayerDamagedState damagedState;
     public PlayerSlideState slideState;
     public PlayerAttackState attackState;
-
-
-
-
 
     [Header("Components")]
     public Combat combat;
@@ -37,14 +33,12 @@ public class Player : MonoBehaviour
 
     public int facingDirection = 1;
 
-    //Inputs
+    // Inputs
     public Vector2 moveInput;
     public bool runPressed;
     public bool jumpPressed;
     public bool jumpReleased;
     public bool attackPressed;
-
-
 
     [Header("Ground Check")]
     public Transform groundCheck;
@@ -55,7 +49,6 @@ public class Player : MonoBehaviour
     [Header("Crouch Check")]
     public Transform headCheck;
     public float headCheckRadius = .2f;
-
 
     [Header("Slide Settings")]
     public float slideDuration = 0.84f;
@@ -69,8 +62,6 @@ public class Player : MonoBehaviour
 
     private bool isSliding;
 
-
-
     private void Awake()
     {
         idleState = new PlayerIdleState(this);
@@ -82,9 +73,14 @@ public class Player : MonoBehaviour
         attackState = new PlayerAttackState(this);
     }
 
-
     void Start()
     {
+        if (rb == null)
+        {
+            Debug.LogError("Player Rigidbody2D is missing!", this);
+            return;
+        }
+
         rb.gravityScale = normalGravity;
 
         ChangeState(idleState);
@@ -92,9 +88,12 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        if (currentState == null)
+            return;
+
         currentState.Update();
- 
-        if(!isSliding)
+
+        if (!isSliding)
             Flip();
 
         HandleAnimations();
@@ -102,16 +101,22 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (currentState == null)
+            return;
+
         currentState.FixedUpdate();
 
         CheckGrounded();
-
-        
-
     }
 
     public void ChangeState(PlayerState newState)
     {
+        if (newState == null)
+        {
+            Debug.LogError("Attempted to change to a null player state!", this);
+            return;
+        }
+
         if (currentState != null)
             currentState.Exit();
 
@@ -119,109 +124,111 @@ public class Player : MonoBehaviour
         currentState.Enter();
     }
 
-
-  
-
-   
-
-   
-
-    
-
-
     public void SetColliderNormal()
     {
-        playerCollider.size = new Vector2(playerCollider.size.x, normalHeight);
+        if (playerCollider == null) return;
+
+        playerCollider.size = new Vector2(
+            playerCollider.size.x, normalHeight);
+
         playerCollider.offset = normalOffset;
     }
 
     public void SetColliderSlide()
     {
-        playerCollider.size = new Vector2(playerCollider.size.x, slideHeight);
+        if (playerCollider == null) return;
+
+        playerCollider.size = new Vector2(
+            playerCollider.size.x, slideHeight);
+
         playerCollider.offset = slideOffset;
     }
 
-
     public void ApplyVariableGravity()
     {
-        if (rb.linearVelocity.y < -0.1)
-        {
+        if (rb == null) return;
+
+        if (rb.linearVelocity.y < -0.1f)
             rb.gravityScale = fallGravity;
-        }
+
         else if (rb.linearVelocity.y > 0.1f)
-        {
             rb.gravityScale = jumpGravity;
-        }
+
         else
-        {
             rb.gravityScale = normalGravity;
-        }
-
     }
-
 
     void CheckGrounded()
     {
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+        if (groundCheck == null)
+            return;
+
+        isGrounded = Physics2D.OverlapCircle(
+            groundCheck.position,
+            groundCheckRadius,
+            groundLayer
+        );
     }
 
     public bool CheckForCeiling()
     {
-        return Physics2D.OverlapCircle(headCheck.position, headCheckRadius, groundLayer);
-    }
+        if (headCheck == null)
+            return false;
 
+        return Physics2D.OverlapCircle(
+            headCheck.position,
+            headCheckRadius,
+            groundLayer
+        );
+    }
 
     void HandleAnimations()
-    { 
-        anim.SetBool("isGrounded", isGrounded);
+    {
+        if (anim == null || rb == null)
+            return;
 
+        anim.SetBool("isGrounded", isGrounded);
         anim.SetFloat("yVelocity", rb.linearVelocity.y);
     }
-
 
     void Flip()
     {
         if (moveInput.x > 0.1f)
-        { 
             facingDirection = 1;
-        }
-        else if ( moveInput.x < -0.1f)
-        {
+
+        else if (moveInput.x < -0.1f)
             facingDirection = -1;
-        }
-        transform.localScale = new Vector3(facingDirection, 1, 1);
+
+        transform.localScale = new Vector3(
+            facingDirection, 1, 1);
     }
-
-
 
     public void AttackAnimationFinished()
     {
-        currentState.AttackAnimationFinished();
+        if (currentState != null)
+            currentState.AttackAnimationFinished();
     }
-
 
     public void OnMove(InputValue value)
     {
         moveInput = value.Get<Vector2>();
-    }   
+    }
 
     public void OnRun(InputValue value)
     {
         runPressed = value.isPressed;
     }
 
-
     public void OnAttack(InputValue value)
     {
         attackPressed = value.isPressed;
     }
 
-
     public void OnJump(InputValue value)
     {
         if (value.isPressed)
         {
-            if(isGrounded && !CheckForCeiling())
+            if (isGrounded && !CheckForCeiling())
                 jumpPressed = true;
 
             jumpReleased = false;
@@ -232,15 +239,20 @@ public class Player : MonoBehaviour
         }
     }
 
-
-
-
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+        if (groundCheck != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(
+                groundCheck.position, groundCheckRadius);
+        }
 
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(headCheck.position, headCheckRadius);
+        if (headCheck != null)
+        {
+            Gizmos.color = Color.blue;
+            Gizmos.DrawWireSphere(
+                headCheck.position, headCheckRadius);
+        }
     }
 }
